@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f2f2f7">
+<title>Metro Ahora — Prueba de contingencia</title>
+<style>
+:root{
+  --bg:#f2f2f7;--card:#fff;--text:#111113;--muted:#6e6e73;
+  --red:#ff3b30;--blue:#007aff;--green:#34c759;--orange:#ff9500;
+  --line:#e5e5ea;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif}
+main{max-width:720px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 28px)}
+.hero{background:linear-gradient(145deg,#111113,#252529);color:#fff;border-radius:24px;padding:22px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
+.kicker{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.04em;background:rgba(255,255,255,.12);padding:7px 10px;border-radius:999px}
+h1{font-size:30px;line-height:1.02;margin:14px 0 8px}
+.hero p{margin:0;color:#d1d1d6;line-height:1.4}
+.card{background:var(--card);border-radius:20px;padding:18px;margin-top:14px;box-shadow:0 1px 0 rgba(0,0,0,.04)}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.label{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.status{font-weight:800}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;font-size:13px;font-weight:800;background:#eef5ff;color:#0056b3}
+.pill.red{background:#fff0ef;color:#b42318}
+select,button,input{font:inherit}
+select{width:100%;margin-top:10px;border:1px solid var(--line);background:#fff;border-radius:14px;padding:14px;color:var(--text)}
+button{width:100%;border:0;border-radius:15px;padding:15px 16px;font-weight:800;font-size:16px;cursor:pointer}
+button.primary{background:var(--blue);color:#fff}
+button.red{background:var(--red);color:#fff}
+button.dark{background:#1c1c1e;color:#fff}
+button.soft{background:#eef0f4;color:#111}
+button:disabled{opacity:.45}
+.actions{display:grid;gap:10px;margin-top:12px}
+.switch{display:flex;align-items:center;gap:10px}
+.switch input{width:22px;height:22px}
+.notice{font-size:13px;line-height:1.4;color:var(--muted);margin-top:10px}
+.hidden{display:none!important}
+.stopTitle{font-size:21px;font-weight:900;margin:2px 0 4px}
+.big{font-size:28px;font-weight:950;line-height:1.03}
+.busgrid{display:grid;gap:10px;margin-top:12px}
+.bus{border:1px solid var(--line);border-radius:17px;padding:14px;background:#fff}
+.bus.good{border:2px solid var(--green)}
+.busHead{display:flex;justify-content:space-between;gap:10px;align-items:start}
+.busNo{font-size:28px;font-weight:950}
+.eta{font-weight:900;color:#147a31}
+.meta{font-size:13px;color:var(--muted);line-height:1.35;margin-top:5px}
+.bus button{margin-top:11px;background:#111;color:#fff}
+.emergency{border:2px solid var(--red);background:#fff}
+.emergency h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--red);margin:0 0 10px}
+.emergency .route{font-size:36px;font-weight:950;letter-spacing:-.02em}
+.emergency .drop{font-size:22px;font-weight:900;margin-top:14px}
+.emergency .remember{margin-top:14px;background:#fff4d7;border-radius:13px;padding:12px;font-weight:850}
+.step{padding:10px 0;border-top:1px solid var(--line);font-weight:700}
+.step:first-of-type{border-top:0}
+.small{font-size:12px;color:var(--muted)}
+.loader{display:inline-block;width:16px;height:16px;border:2px solid #ddd;border-top-color:#111;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-3px}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{font-size:11px;color:#8e8e93;text-align:center;margin-top:18px;line-height:1.35}
+</style>
+</head>
+<body>
+<main>
+<section class="hero">
+  <span class="kicker">PRUEBA GITHUB · METRO AHORA</span>
+  <h1>Salida rápida ante una contingencia</h1>
+  <p>El objetivo es mirar el teléfono una vez, recordar hasta 3 micros útiles y guardarlo.</p>
+</section>
+
+<section class="card">
+  <div class="row">
+    <div>
+      <div class="label">Estado de prueba</div>
+      <div id="gpsStatus" class="status">GPS aún no iniciado</div>
+    </div>
+    <span id="incidentPill" class="pill red">L2 centro simulado</span>
+  </div>
+  <div class="switch" style="margin-top:14px">
+    <input id="simulate" type="checkbox" checked>
+    <label for="simulate"><strong>Simular corte L2 centro</strong><br><span class="small">Patronato · Puente Cal y Canto · Santa Ana</span></label>
+  </div>
+</section>
+
+<section class="card">
+  <div class="label">1 · ¿A qué estación ibas?</div>
+  <select id="destination">
+    <option value="">Cargando estaciones…</option>
+  </select>
+  <div class="actions">
+    <button id="startBtn" class="red" disabled>🚨 Buscar salida ahora</button>
+  </div>
+  <div class="notice">La web pedirá tu ubicación. No guarda el GPS ni lo envía a un servidor propio.</div>
+</section>
+
+<section id="result" class="hidden">
+  <section class="card">
+    <div class="label">2 · Salida sugerida</div>
+    <div id="summary"></div>
+  </section>
+  <section class="card">
+    <div class="label">3 · Toma la primera útil que llegue</div>
+    <div id="busList" class="busgrid"></div>
+    <div id="liveNote" class="notice"></div>
+  </section>
+</section>
+
+<section id="rideCard" class="card emergency hidden">
+  <h2>Tarjeta para captura</h2>
+  <div class="route" id="rideBus">🚌 —</div>
+  <div class="drop" id="rideDrop"></div>
+  <div id="rideSteps"></div>
+  <div class="remember">📸 Haz una captura de esta tarjeta y guarda el teléfono.</div>
+  <div class="actions">
+    <button id="dropMapBtn" class="dark">📍 Ver punto de bajada</button>
+    <button id="navBtn" class="primary">🧭 Abrir ruta completa en Google Maps</button>
+    <button id="copyBtn" class="soft">📋 Copiar tarjeta</button>
+  </div>
+</section>
+
+<footer>
+Prueba conceptual. El GTFS se usa para geometría y recorridos; la llegada al paradero se consulta solo una vez y puede no estar disponible. Google Maps decide finalmente su propia ruta y sus avisos.
+</footer>
+</main>
+
+<script>
+const NETWORK_URL="https://raw.githubusercontent.com/nsalloums/metrovivo-santiago/main/data/network.json";
+const STOPS_URL="https://raw.githubusercontent.com/nsalloums/metrovivo-santiago/main/data/bus/stops.json";
+const NAMES_URL="https://raw.githubusercontent.com/nsalloums/metrovivo-santiago/main/data/bus/names.json";
+const PATTERNS_URL="https://raw.githubusercontent.com/nsalloums/metrovivo-santiago/main/data/bus/patterns.json";
+const LIVE_BASE="https://api.xor.cl/red/bus-stop/";
+
+let network,busData,userPos,currentDestination,currentDrop,currentBus;
+let stationById=new Map();
+
+const $=q=>document.querySelector(q);
+const norm=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+
+function hav(a,b,c,d){
+  const R=6371000,r=x=>x*Math.PI/180;
+  const dLat=r(c-a),dLon=r(d-b);
+  const x=Math.sin(dLat/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(dLon/2)**2;
+  return 2*R*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+}
+function walkMin(m){return Math.max(1,Math.ceil(m*1.5/75))}
+function fmtM(m){return m<1000?Math.round(m)+" m":(m/1000).toFixed(1)+" km"}
+function decodeDeltas(arr,scale){
+  let v=0; return (arr||[]).map(d=>(v+=Number(d))/scale);
+}
+function etaRef(x){
+  if(!x)return 999;
+  const a=x.minEta,b=x.maxEta;
+  if(a==null&&b==null)return 999;
+  if(a==null)return +b;if(b==null)return +a;
+  return (+a + +b)/2;
+}
+function etaText(x){
+  if(!x)return "sin dato en vivo";
+  if(x.minEta===0&&x.maxEta===0)return "llegando";
+  if(x.minEta==null&&x.maxEta==null)return "sin ETA";
+  if(x.minEta===x.maxEta)return x.minEta+" min";
+  return (x.minEta??0)+"–"+(x.maxEta??"?")+" min";
+}
+
+async function init(){
+  try{
+    network=await (await fetch(NETWORK_URL)).json();
+    stationById=new Map(Object.entries(network.stations));
+    const sel=$("#destination");
+    const stations=Object.entries(network.stations)
+      .map(([id,s])=>({id,name:s.name||id}))
+      .sort((a,b)=>a.name.localeCompare(b.name,"es"));
+    sel.innerHTML='<option value="">Selecciona estación de destino…</option>'+
+      stations.map(s=>'<option value="'+escapeHtml(s.id)+'">'+escapeHtml(s.name)+'</option>').join("");
+    $("#startBtn").disabled=false;
+  }catch(e){
+    $("#gpsStatus").textContent="Error cargando red Metro";
+  }
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
+}
+async function getBusData(){
+  if(busData)return busData;
+  const [rawStops,rawNames,rawPatterns]=await Promise.all([
+    fetch(STOPS_URL).then(r=>r.json()),
+    fetch(NAMES_URL).then(r=>r.json()),
+    fetch(PATTERNS_URL).then(r=>r.json())
+  ]);
+  const codes=String(rawStops.codes||"").split(",");
+  const names=String(rawNames.names||"").split("|");
+  const scale=Number(rawStops.meta?.scale||100000);
+  const lons=decodeDeltas(rawStops.lon,scale);
+  const lats=decodeDeltas(rawStops.lat,scale);
+  const stops=codes.map((code,i)=>({idx:i,code,name:names[i]||code,lat:lats[i],lon:lons[i]}));
+  busData={stops,patterns:rawPatterns.patterns||{},routes:rawPatterns.routes||{}};
+  return busData;
+}
+function stationCoord(id){
+  const s=network.stations[id];
+  if(!s?.ll)return null;
+  return {id,name:s.name,lon:s.ll[0],lat:s.ll[1],lines:s.lines||[]};
+}
+function closedNames(){
+  return $("#simulate").checked
+    ? new Set(["patronato","puente cal y canto","santa ana"])
+    : new Set();
+}
+function buildMetroGraph(){
+  const closed=closedNames(),g=new Map();
+  const add=(a,b)=>{
+    if(!g.has(a))g.set(a,[]);
+    g.get(a).push(b);
+  };
+  for(const line of network.lines||[]){
+    const ids=line.stations||line.stationIds||[];
+    for(let i=0;i<ids.length-1;i++){
+      const a=ids[i],b=ids[i+1];
+      if(closed.has(norm(network.stations[a]?.name))||closed.has(norm(network.stations[b]?.name)))continue;
+      add(a,b);add(b,a);
+    }
+  }
+  return g;
+}
+function metroHops(from,to,g){
+  if(from===to)return 0;
+  const q=[[from,0]],seen=new Set([from]);
+  while(q.length){
+    const [x,d]=q.shift();
+    for(const n of g.get(x)||[]){
+      if(n===to)return d+1;
+      if(!seen.has(n)){seen.add(n);q.push([n,d+1])}
+    }
+  }
+  return Infinity;
+}
+function nearestMetroTo(lat,lon,excludeClosed=true){
+  const closed=closedNames();
+  let best=null;
+  for(const [id,s] of Object.entries(network.stations)){
+    if(!s.ll)continue;
+    if(excludeClosed&&closed.has(norm(s.name)))continue;
+    const d=hav(lat,lon,s.ll[1],s.ll[0]);
+    if(!best||d<best.d)best={id,name:s.name,lat:s.ll[1],lon:s.ll[0],d};
+  }
+  return best;
+}
+function nearestStops(bus,lat,lon,n=5){
+  const out=[];
+  for(const s of bus.stops){
+    if(!Number.isFinite(s.lat)||!Number.isFinite(s.lon))continue;
+    const d=hav(lat,lon,s.lat,s.lon);
+    if(d<1100)out.push({...s,d});
+  }
+  out.sort((a,b)=>a.d-b.d);
+  return out.slice(0,n);
+}
+function patternsAtStop(bus,stopIdx){
+  const out=[];
+  for(const [route,dirs] of Object.entries(bus.patterns)){
+    for(const [dir,pat] of Object.entries(dirs||{})){
+      (pat.st||[]).forEach((idx,pos)=>{
+        if(idx===stopIdx)out.push({route,dir,pat,pos});
+      });
+    }
+  }
+  return out;
+}
+async function liveArrivals(code){
+  try{
+    const j=await fetch(LIVE_BASE+encodeURIComponent(code),{cache:"no-store"}).then(r=>r.json());
+    if(j.status_code!==0)return new Map();
+    const m=new Map();
+    for(const svc of j.services||[]){
+      for(const b of svc.buses||[]){
+        const x={service:String(svc.id||""),minEta:b.min_arrival_time??null,maxEta:b.max_arrival_time??null,meters:b.meters_distance??null};
+        const old=m.get(x.service);
+        if(!old||etaRef(x)<etaRef(old))m.set(x.service,x);
+      }
+    }
+    return m;
+  }catch(e){return new Map()}
+}
+function liveForRoute(map,route){
+  if(map.has(route))return map.get(route);
+  const nr=norm(route);
+  for(const [k,v] of map)if(norm(k)===nr)return v;
+  return null;
+}
+function bestFutureConnection(bus,variant,destination,g){
+  const st=variant.pat.st||[];
+  let best=null;
+  for(let j=variant.pos+1;j<st.length;j++){
+    if((j-variant.pos)>45)break;
+    const bs=bus.stops[st[j]];
+    if(!bs)continue;
+    let nearest=[];
+    for(const [id,s] of Object.entries(network.stations)){
+      if(!s.ll||closedNames().has(norm(s.name)))continue;
+      const d=hav(bs.lat,bs.lon,s.ll[1],s.ll[0]);
+      if(d<=850)nearest.push({id,name:s.name,lat:s.ll[1],lon:s.ll[0],d});
+    }
+    nearest.sort((a,b)=>a.d-b.d);
+    for(const m of nearest.slice(0,3)){
+      const hops=metroHops(m.id,destination.id,g);
+      if(!Number.isFinite(hops))continue;
+      const busStops=j-variant.pos;
+      const score=busStops*1.15 + m.d/140 + hops*1.45;
+      const c={dropStop:bs,dropPos:j,busStops,metro:m,hops,score};
+      if(!best||c.score<best.score)best=c;
+    }
+    const directD=hav(bs.lat,bs.lon,destination.lat,destination.lon);
+    if(directD<=900){
+      const c={dropStop:bs,dropPos:j,busStops:j-variant.pos,metro:destination,hops:0,score:(j-variant.pos)*1.15+directD/140};
+      if(!best||c.score<best.score)best=c;
+    }
+  }
+  return best;
+}
+function mapsPin(stop){
+  return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(stop.lat+","+stop.lon)+"&utm_source=metro_ahora_test&utm_campaign=punto_bajada";
+}
+function mapsTransit(dest){
+  return "https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent("Metro "+dest.name+", Santiago, Chile")+
+    "&travelmode=transit&dir_action=navigate&utm_source=metro_ahora_test&utm_campaign=contingencia";
+}
+async function start(){
+  const id=$("#destination").value;
+  if(!id){alert("Selecciona una estación de destino.");return}
+  const dest=stationCoord(id);
+  if(!dest){alert("Destino sin coordenadas.");return}
+  if(closedNames().has(norm(dest.name))){
+    alert("En esta simulación "+dest.name+" está dentro del corte. Elige una estación operativa para la prueba.");
+    return;
+  }
+  $("#startBtn").disabled=true;
+  $("#startBtn").innerHTML='<span class="loader"></span> Buscando salida…';
+  try{
+    const pos=await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej,{enableHighAccuracy:true,timeout:12000,maximumAge:5000}));
+    userPos={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy};
+    currentDestination=dest;
+    $("#gpsStatus").textContent="GPS ±"+Math.round(pos.coords.accuracy)+" m";
+    const bus=await getBusData();
+    const nearestMetro=nearestMetroTo(userPos.lat,userPos.lon,true);
+    const stops=nearestStops(bus,userPos.lat,userPos.lon,6);
+    if(!stops.length)throw new Error("No encontré paraderos RED cercanos.");
+    let originStop=null,variants=[];
+    for(const s of stops){
+      const p=patternsAtStop(bus,s.idx);
+      if(p.length){originStop=s;variants=p;break}
+    }
+    if(!originStop)throw new Error("Encontré paraderos, pero no recorridos utilizables.");
+    const live=await liveArrivals(originStop.code);
+    const g=buildMetroGraph();
+    const candidates=[];
+    for(const v of variants){
+      const conn=bestFutureConnection(bus,v,dest,g);
+      if(!conn)continue;
+      const lv=liveForRoute(live,v.route);
+      const wait=lv?etaRef(lv):12;
+      candidates.push({...v,...conn,live:lv,totalScore:conn.score+Math.min(wait,20)*.7});
+    }
+    const byRoute=new Map();
+    for(const c of candidates){
+      const old=byRoute.get(c.route);
+      if(!old||c.totalScore<old.totalScore)byRoute.set(c.route,c);
+    }
+    const top=[...byRoute.values()].sort((a,b)=>a.totalScore-b.totalScore).slice(0,3);
+    $("#summary").innerHTML=
+      '<div class="stopTitle">'+escapeHtml(originStop.code)+' · '+escapeHtml(originStop.name)+'</div>'+
+      '<div class="meta">🚶 '+walkMin(originStop.d)+' min caminando · '+fmtM(originStop.d)+'</div>'+
+      '<div class="meta">Metro operativo más cercano: '+escapeHtml(nearestMetro.name)+' · '+fmtM(nearestMetro.d)+'</div>';
+    const list=$("#busList");
+    if(!top.length){
+      list.innerHTML='<div class="notice">No encontré una micro simple para esta combinación. Usa Google Maps como respaldo.</div>'+
+        '<button class="primary" onclick="window.location.href=mapsTransit(currentDestination)">Abrir Google Maps</button>';
+    }else{
+      list.innerHTML=top.map((c,i)=>{
+        const head=c.pat.dest||bus.routes[c.route]||"";
+        return '<div class="bus '+(i===0?'good':'')+'">'+
+          '<div class="busHead"><div><div class="busNo">'+escapeHtml(c.route)+'</div><div class="meta">→ '+escapeHtml(head)+'</div></div>'+
+          '<div class="eta">'+escapeHtml(etaText(c.live))+'</div></div>'+
+          '<div class="meta">Baja en '+escapeHtml(c.dropStop.code)+' · aprox. '+c.busStops+' paradas · luego '+fmtM(c.metro.d)+' a Metro '+escapeHtml(c.metro.name)+'</div>'+
+          '<button data-route="'+escapeHtml(c.route)+'">🚌 Me subí a '+escapeHtml(c.route)+'</button></div>';
+      }).join("");
+      [...list.querySelectorAll("button[data-route]")].forEach(btn=>{
+        btn.onclick=()=>chooseBus(top.find(x=>x.route===btn.dataset.route),bus,dest);
+      });
+    }
+    $("#liveNote").textContent=live.size
+      ? "Llegadas consultadas una vez para este paradero. Si cualquiera de las 3 llega primero, puedes elegirla."
+      : "No hubo llegada en vivo; las opciones se ordenaron con el recorrido GTFS y una espera neutra.";
+    $("#result").classList.remove("hidden");
+    $("#result").scrollIntoView({behavior:"smooth"});
+  }catch(e){
+    alert("No pude completar la prueba: "+(e.message||e));
+  }finally{
+    $("#startBtn").disabled=false;
+    $("#startBtn").textContent="🚨 Buscar salida ahora";
+  }
+}
+function chooseBus(c,bus,dest){
+  currentBus=c;currentDrop=c.dropStop;currentDestination=dest;
+  $("#rideBus").textContent="🚌 "+c.route+" → "+(c.pat.dest||bus.routes[c.route]||"");
+  $("#rideDrop").innerHTML="🔔 BÁJATE EN<br>"+escapeHtml(c.dropStop.code)+" · "+escapeHtml(c.dropStop.name);
+  $("#rideSteps").innerHTML=
+    '<div class="step">Faltan aprox. <strong>'+c.busStops+' paradas</strong></div>'+
+    '<div class="step">Luego camina <strong>'+fmtM(c.metro.d)+'</strong> hasta <strong>Metro '+escapeHtml(c.metro.name)+'</strong></div>'+
+    '<div class="step">Continúa a <strong>'+escapeHtml(dest.name)+'</strong> · aprox. '+c.hops+' estaciones de Metro</div>';
+  $("#rideCard").classList.remove("hidden");
+  $("#rideCard").scrollIntoView({behavior:"smooth"});
+}
+$("#dropMapBtn").onclick=()=>{if(currentDrop)window.location.href=mapsPin(currentDrop)};
+$("#navBtn").onclick=()=>{if(currentDestination)window.location.href=mapsTransit(currentDestination)};
+$("#copyBtn").onclick=async()=>{
+  if(!currentBus)return;
+  const t="METRO AHORA\nBUS "+currentBus.route+"\nBAJA: "+currentDrop.code+" · "+currentDrop.name+
+    "\nLuego: Metro "+currentBus.metro.name+" → "+currentDestination.name+
+    "\nAprox. "+currentBus.busStops+" paradas";
+  try{await navigator.clipboard.writeText(t);alert("Tarjeta copiada.");}
+  catch(e){prompt("Copia esta tarjeta:",t)}
+};
+$("#simulate").onchange=()=>{
+  $("#incidentPill").textContent=$("#simulate").checked?"L2 centro simulado":"Sin simulación";
+  $("#incidentPill").className=$("#simulate").checked?"pill red":"pill";
+};
+$("#startBtn").onclick=start;
+init();
+</script>
+</body>
+</html>
